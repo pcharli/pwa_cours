@@ -18,8 +18,11 @@ const urlsToCache = [
     '/icons/apple-touch-icon.png',
     '/icons/favicon.ico',
     '/images/telecharger2.png',
-    '/data.json'
+    'data.json'
 ];
+
+// Séparons l'URL de l'API pour un traitement spécifique
+const API_URL = 'http://localhost:5501/data.json';
 
 // installation du serviceworker
 self.addEventListener('install', event => {
@@ -55,14 +58,43 @@ self.addEventListener('activate', event => {
   })
   
 // lors d'une requête, on l'intercepte
+
 self.addEventListener('fetch', event => {
-    event.respondWith(
-        // si la ressource est dans le cache
-        caches.match(event.request)
-        //on l'envoie direct sinon on laisse passer la requête sur le web
-            .then(response => response || fetch(event.request))
-    );
+    //si la requête cible l'api
+    console.log(event.request.url)
+    if (event.request.url === API_URL) {
+        
+        // Stratégie Réseau d'abord pour l'API
+        event.respondWith(
+            // on lance la requête sur le réseau
+            fetch(event.request)
+                .then(response => {
+                    if (response.ok) { //si on a une réponse
+                        const responseClone = response.clone(); // Clone de la réponse avant consommation par le script
+                        caches.open(CACHE_NAME)
+                        //on met en cache la requête et sa réponde qu'on a cloné
+                            .then(cache => cache.put(event.request, responseClone));
+                    }
+                    //on retourne la réponse
+                    return response;
+                })
+                .catch(() => {
+                    // Si le réseau échoue, renvoyer les données en cache
+                    return caches.match(event.request);
+                })
+        );
+    } else {
+        // Stratégie Cache d'abord pour les autres ressources
+        //on remplace la réponse à la requête interceptée par fetch.
+        event.respondWith(
+            //on cherche dans le cache une réponse correspondant à la requête
+            caches.match(event.request)
+            //si on a une réponse elle est retournée || on envoie la requête au réseau
+                .then(response => response || fetch(event.request))
+        );
+    }
 });
+
 
 
 //add push notifications
