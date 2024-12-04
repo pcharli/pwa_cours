@@ -1,7 +1,7 @@
 const version = 1.01
 
 //add mise en cache
-const cacheVersion = 2
+const cacheVersion = 3
 const CACHE_NAME = 'news-web-v' + cacheVersion //nom du cache
 //liste des éléments à mettre en cache
 const urlsToCache = [
@@ -17,8 +17,7 @@ const urlsToCache = [
     '/images/telecharger.png',
     '/icons/apple-touch-icon.png',
     '/icons/favicon.ico',
-    '/images/telecharger2.png',
-    'data.json'
+    '/images/telecharger2.png'
 ];
 
 // Séparons l'URL de l'API pour un traitement spécifique
